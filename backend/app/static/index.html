@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Distributed Change Intelligence Platform</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header>
+  <h1>Distributed Change Intelligence Platform</h1>
+  <p class="tagline">Investigation workspace — evidence, not verdicts.</p>
+</header>
+
+<section class="panel" id="overview">
+  <h2>System Overview</h2>
+  <div id="overview-stats" class="stat-row">Loading…</div>
+</section>
+
+<section class="panel" id="controls">
+  <h2>Demo Controls</h2>
+  <div class="controls-row">
+    <label>Service
+      <select id="service-select">
+        <option value="order-service">order-service</option>
+        <option value="gateway">gateway</option>
+        <option value="inventory-service">inventory-service</option>
+        <option value="payment-service">payment-service</option>
+      </select>
+    </label>
+    <button id="btn-deploy">Generate Demo Deploy (order-service)</button>
+    <button id="btn-investigate">Run Investigation</button>
+  </div>
+  <div class="controls-row">
+    <span class="controls-label">Failure injection:</span>
+    <label><input type="checkbox" id="chk-latency"> Latency (2s, inventory-service)</label>
+    <label><input type="checkbox" id="chk-errors"> Errors (30%, inventory-service)</label>
+    <label><input type="checkbox" id="chk-load"> Load ×6 (order-service → inventory-service)</label>
+  </div>
+  <div id="action-status" class="action-status"></div>
+</section>
+
+<section class="panel" id="workspace">
+  <h2>Change Investigation</h2>
+  <div class="workspace-grid">
+    <div class="workspace-col">
+      <h3>Dependency Graph</h3>
+      <div id="graph-view" class="scroll-box">Select a service and click "Run Investigation".</div>
+    </div>
+    <div class="workspace-col">
+      <h3>Evidence Timeline</h3>
+      <div id="timeline-view" class="scroll-box">—</div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="summary">
+  <h2>Investigation Summary</h2>
+  <div id="summary-view">Run an investigation to see results here. This can take up to a minute — the LLM is calling MCP tools to gather evidence before synthesizing a result.</div>
+</section>
+
+<footer>
+  <p><strong>What this system does not claim:</strong> it does not identify root causes, predict failures, or assert that a deployment caused an incident. It surfaces correlated evidence — code changes, dependency reachability, runtime telemetry, and similar past incidents — for an engineer to interpret. See the README's Responsible Framing section for the full statement.</p>
+</footer>
+
+<script src="/app.js"></script>
+</body>
+</html>

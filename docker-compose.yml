@@ -1,0 +1,98 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=dcip
+    ports:
+      - "5435:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+psycopg://postgres:postgres@postgres:5432/dcip
+      - PROMETHEUS_URL=http://prometheus:9090
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - MCP_URL=http://mcp-server:8100/mcp
+      - INVENTORY_SERVICE_URL=http://inventory-service:8000
+      - ORDER_SERVICE_URL=http://order-service:8000
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.6-flash}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      prometheus:
+        condition: service_started
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - gateway
+      - order-service
+      - inventory-service
+      - payment-service
+
+  gateway:
+    build: ./services/gateway
+    ports:
+      - "8080:8000"
+    environment:
+      - ORDER_SERVICE_URL=http://order-service:8000
+    depends_on:
+      - order-service
+
+  order-service:
+    build: ./services/order-service
+    ports:
+      - "8081:8000"
+    environment:
+      - INVENTORY_SERVICE_URL=http://inventory-service:8000
+      - PAYMENT_SERVICE_URL=http://payment-service:8000
+    depends_on:
+      - inventory-service
+      - payment-service
+
+  inventory-service:
+    build: ./services/inventory-service
+    ports:
+      - "8082:8000"
+
+  payment-service:
+    build: ./services/payment-service
+    ports:
+      - "8083:8000"
+
+  load-generator:
+    build: ./services/load-generator
+    environment:
+      - GATEWAY_URL=http://gateway:8000
+      - TRAFFIC_RPS=3
+    depends_on:
+      - gateway
+
+  mcp-server:
+    build: ./mcp-server
+    ports:
+      - "8100:8100"
+    environment:
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
