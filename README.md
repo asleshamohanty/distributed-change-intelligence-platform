@@ -96,13 +96,6 @@ running component, not a slide:
 | Applied AI               | Real MCP server/client, Gemini tool-calling, schema-constrained structured outputs |
 | Databases                | PostgreSQL relational modeling *and* pgvector similarity search in the same store |
 
-### Resume-bullet → implementation map
-
-| Resume claim | Where it lives |
-| -------------- | ---------------- |
-| "Engineered a distributed system integrating source-code changes, service dependencies, deployment events, and runtime telemetry to investigate failures across distributed applications." | [Change Intelligence](#deep-dive-dependency-graph--blast-radius) (`change_service.py`), [Dependency Graph](#deep-dive-dependency-graph--blast-radius) (`graph_service.py`), [Telemetry](#deep-dive-observability--telemetry) (`telemetry_service.py`), [Investigation Layer](#deep-dive-llm-reasoning--structured-outputs) (`investigation_service.py`) |
-| "Modeled inter-service dependencies as a directed graph and implemented graph-based blast-radius analysis to identify services potentially impacted by software changes; integrated anomaly detection using latency, error-rate, and resource-utilization metrics." | `graph_service.get_blast_radius_enriched()`, `ml/anomaly_model.py` + `ml/train.py` |
-| "Built an MCP-based investigation workflow combining code diffs, dependency context, runtime evidence, and historical incidents retrieved with PostgreSQL and pgvector into evidence-backed failure hypotheses." | `mcp-server/` (six tools), `incident_service.py` (pgvector), `investigation_service.py` (Gemini tool-calling loop → `InvestigationResult`) |
 
 ## Architecture
 
