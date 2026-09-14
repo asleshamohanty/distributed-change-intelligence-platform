@@ -732,6 +732,56 @@ that falls apart under one follow-up question in an interview.
 | The deployment caused the incident. | The deployment preceded the observed anomalies. |
 | These services are broken. | These services are potentially impacted / worth investigating first. |
 
+### Why this matters, not just as a wording rule
+
+The system doesn't say *"I know exactly what broke your system."* It says:
+*"Here is what changed, here is what could have been affected, here is what
+became abnormal, and here are similar past incidents. Based on this
+evidence, these are the most likely explanations."*
+
+Worked example — the exact chain this system actually produces:
+
+```
+Developer changes Order Service
+        |
+Order Service deployed
+        |
+Inventory Service latency increases
+        |
+Inventory errors increase
+        |
+Anomaly detector flags inventory-service
+        |
+Investigation Layer finds:
+   "Inventory is downstream of Order"
+        +
+   "Latency increased after deployment"
+        +
+   "A similar incident happened before"
+        |
+Result -> "This change may have contributed
+           to the Inventory anomaly."
+```
+
+But it deliberately never says: *"The Order Service change caused the
+Inventory failure."* Because there could be another explanation the
+evidence gathered so far doesn't rule out:
+
+- another deployment happened at the same time
+- the database was overloaded independently
+- an external API failed
+- traffic suddenly increased for unrelated reasons
+- the telemetry itself is incomplete or delayed
+
+So the engineer makes the final call, not the system. That's a deliberate
+design choice, not a limitation to apologize for: the algorithms and the
+LLM are used to *collect, connect, and explain* evidence — not to pretend a
+statistical model or an LLM can know ground truth it was never given.
+
+**In one sentence:** this system narrows down *where* and *why* an incident
+might have happened; the engineer decides whether that explanation is
+actually correct.
+
 Concretely, this system:
 
 - **Does not** claim to identify a root cause — `InvestigationResult` has
